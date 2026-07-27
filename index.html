@@ -1,1 +1,456 @@
 
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>⭐ Кликер</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-tap-highlight-color:transparent}
+    body{min-height:100dvh;display:flex;justify-content:center;align-items:center;font-family:system-ui,sans-serif;background:#0a0e1a;padding:12px;touch-action:manipulation;overflow:hidden}
+    .game{max-width:420px;width:100%;background:linear-gradient(145deg,#141b33,#0b1022);border-radius:40px;padding:24px 20px 28px;box-shadow:0 20px 60px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.06)}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px}
+    .header h1{font-size:clamp(1.2rem,4vw,1.6rem);font-weight:600;background:linear-gradient(135deg,#8ab4ff,#4a7fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .stats{display:flex;gap:8px;background:rgba(255,255,255,.04);border-radius:60px;padding:6px 14px;flex-wrap:wrap}
+    .stats span{color:#8a9fc7;font-size:clamp(.65rem,1.8vw,.8rem);display:flex;align-items:center;gap:4px}
+    .stats strong{color:#fff;font-weight:600}
+    .clicker{background:radial-gradient(circle at 30% 25%,#1f3a6b,#0b152b);border-radius:50%;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:8px auto 16px;cursor:pointer;touch-action:none;transition:.08s;box-shadow:inset 0 -6px 0 #0a1628,0 12px 40px rgba(0,20,80,.5);border:1px solid rgba(100,160,255,.15);width:min(65vw,280px);position:relative}
+    .clicker:active{transform:scale(.95);box-shadow:inset 0 -3px 0 #0a1628,0 8px 30px rgba(0,20,80,.4)}
+    .clicker .planet{font-size:clamp(4rem,18vw,6rem);line-height:1;filter:drop-shadow(0 0 30px #3f7bff);transition:.08s;pointer-events:none}
+    .clicker:active .planet{transform:scale(.9) rotate(3deg)}
+    .clicker .hint{color:#6d8fc9;font-size:clamp(.65rem,1.6vw,.8rem);margin-top:4px;background:rgba(0,0,0,.3);padding:3px 14px;border-radius:40px}
+    .click-counter{position:absolute;bottom:12px;right:16px;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);padding:2px 12px;border-radius:20px;font-size:clamp(.55rem,1.4vw,.7rem);color:#6d8fc9;border:1px solid rgba(255,255,255,.05)}
+    .click-counter strong{color:#fff;font-weight:500}
+    .balance{text-align:center;margin:-6px 0 12px;font-size:clamp(1.4rem,4.5vw,2rem);font-weight:700;color:#fff;text-shadow:0 0 20px rgba(59,110,255,.3)}
+    .balance small{font-size:clamp(.7rem,1.8vw,.85rem);color:#6d8fc9;font-weight:400}
+    .upgrades{display:flex;flex-direction:column;gap:10px;margin:10px 0 8px}
+    .upgrade{background:rgba(255,255,255,.03);border-radius:60px;padding:8px 16px 8px 20px;display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(255,255,255,.06);gap:8px;flex-wrap:wrap}
+    .upgrade .info{display:flex;align-items:center;gap:12px;flex:1;min-width:120px}
+    .upgrade .icon{font-size:clamp(1.4rem,3.5vw,1.8rem)}
+    .upgrade .desc{color:#a8bde0}
+    .upgrade .desc strong{display:block;color:#fff;font-size:clamp(.9rem,2.4vw,1.05rem);font-weight:500}
+    .upgrade .desc small{color:#6a83af;font-size:clamp(.65rem,1.6vw,.8rem)}
+    .upgrade .cost{background:rgba(0,0,0,.3);padding:4px 14px;border-radius:40px;color:#fcd34d;font-weight:600;font-size:clamp(.85rem,2.2vw,1rem);white-space:nowrap}
+    .upgrade .cost span{color:#fbbf24;margin-right:2px}
+    .btn{background:linear-gradient(145deg,#3b6eff,#1a4ac8);border:none;color:#fff;font-weight:600;font-size:clamp(.9rem,2.2vw,1.05rem);padding:6px 18px;border-radius:40px;min-width:70px;cursor:pointer;box-shadow:0 4px 0 #0f2760;transition:.07s;border:1px solid rgba(255,255,255,.1);touch-action:manipulation}
+    .btn:active{transform:translateY(4px);box-shadow:0 1px 0 #0f2760}
+    .btn:disabled{opacity:.35;transform:translateY(2px);box-shadow:0 2px 0 #0f2760;pointer-events:none}
+    .footer{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:10px}
+    .reset{background:transparent;border:1px solid rgba(255,255,255,.08);color:#6a83af;padding:6px 20px;border-radius:40px;font-size:clamp(.7rem,1.6vw,.85rem);cursor:pointer;transition:.15s}
+    .reset:active{transform:scale(.95)}
+    .total-clicks{color:#4a6a8f;font-size:clamp(.6rem,1.4vw,.7rem)}
+    .save-status{color:#3a6a5f;font-size:clamp(.5rem,1.2vw,.6rem);text-align:right;margin-top:4px;opacity:.7}
+    .float{position:fixed;pointer-events:none;font-weight:700;font-size:clamp(1.8rem,6vw,2.6rem);color:#b7e1ff;text-shadow:0 0 20px #3d8eff,0 0 40px #0044ff;z-index:999;animation:floatUp 1s ease-out forwards}
+    @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-140px) scale(1.3)}}
+    @media(max-width:400px){.game{padding:16px 14px 20px}.upgrade{padding:6px 12px}.btn{min-width:60px;padding:6px 12px;font-size:.85rem}.click-counter{bottom:8px;right:10px;padding:2px 10px}}
+  </style>
+</head>
+<body>
+<div class="game">
+  <div class="header">
+    <h1>⭐ Кликер</h1>
+    <div class="stats">
+      <span>⚡<strong id="clickPower">1</strong></span>
+      <span>🤖<strong id="autoPower">0</strong></span>
+    </div>
+  </div>
+
+  <div class="balance">
+    <span id="resources">0</span> <small>🪐</small>
+  </div>
+
+  <div class="clicker" id="clickArea">
+    <div class="planet" id="planet">🪐</div>
+    <div class="hint">нажми</div>
+    <div class="click-counter">👆 <strong id="clickCount">0</strong></div>
+  </div>
+
+  <div class="upgrades">
+    <div class="upgrade">
+      <div class="info">
+        <div class="icon">⚡</div>
+        <div class="desc"><strong>Сила клика</strong><small>+1 за клик</small></div>
+      </div>
+      <div class="cost"><span>🪐</span><span id="clickCost">10</span></div>
+      <button class="btn" id="buyClick">Купить</button>
+    </div>
+    <div class="upgrade">
+      <div class="info">
+        <div class="icon">🤖</div>
+        <div class="desc"><strong>Авто-дрон</strong><small>+1/сек</small></div>
+      </div>
+      <div class="cost"><span>🪐</span><span id="autoCost">20</span></div>
+      <button class="btn" id="buyAuto">Купить</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span class="total-clicks">Всего кликов: <strong id="totalClicks">0</strong></span>
+    <button class="reset" id="reset">⟳ сброс</button>
+  </div>
+  <div class="save-status" id="saveStatus">💾 автосохранение</div>
+</div>
+
+<script>
+  // ====== КОНФИГУРАЦИЯ ======
+  const CONFIG = {
+    SAVE_INTERVAL: 5000, // автосохранение каждые 5 секунд
+    CLICK_COST_MULT: 1.8,
+    AUTO_COST_MULT: 2.0,
+    API_URL: 'save.php'
+  };
+
+  // ====== СОСТОЯНИЕ ======
+  class GameState {
+    constructor() {
+      this.resources = 0;
+      this.clickPower = 1;
+      this.autoPower = 0;
+      this.clickCost = 10;
+      this.autoCost = 20;
+      this.totalClicks = 0;
+      this.lastSave = Date.now();
+    }
+
+    // Загрузка из объекта
+    load(data) {
+      Object.assign(this, data);
+    }
+
+    // Сброс
+    reset() {
+      this.resources = 0;
+      this.clickPower = 1;
+      this.autoPower = 0;
+      this.clickCost = 10;
+      this.autoCost = 20;
+      this.totalClicks = 0;
+    }
+
+    // Сериализация для сохранения
+    serialize() {
+      return {
+        resources: this.resources,
+        clickPower: this.clickPower,
+        autoPower: this.autoPower,
+        clickCost: this.clickCost,
+        autoCost: this.autoCost,
+        totalClicks: this.totalClicks
+      };
+    }
+  }
+
+  // ====== DOM УПРАВЛЕНИЕ ======
+  class DOMController {
+    constructor() {
+      this.elements = {
+        resources: document.getElementById('resources'),
+        clickPower: document.getElementById('clickPower'),
+        autoPower: document.getElementById('autoPower'),
+        clickCost: document.getElementById('clickCost'),
+        autoCost: document.getElementById('autoCost'),
+        clickCount: document.getElementById('clickCount'),
+        totalClicks: document.getElementById('totalClicks'),
+        buyClick: document.getElementById('buyClick'),
+        buyAuto: document.getElementById('buyAuto'),
+        planet: document.getElementById('planet'),
+        saveStatus: document.getElementById('saveStatus')
+      };
+    }
+
+    update(state) {
+      this.elements.resources.textContent = this.formatNumber(state.resources);
+      this.elements.clickPower.textContent = state.clickPower;
+      this.elements.autoPower.textContent = state.autoPower;
+      this.elements.clickCost.textContent = this.formatNumber(state.clickCost);
+      this.elements.autoCost.textContent = this.formatNumber(state.autoCost);
+      this.elements.clickCount.textContent = state.totalClicks;
+      this.elements.totalClicks.textContent = state.totalClicks;
+      
+      this.elements.buyClick.disabled = state.resources < state.clickCost;
+      this.elements.buyAuto.disabled = state.resources < state.autoCost;
+    }
+
+    formatNumber(num) {
+      if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
+      if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+      if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
+      return Math.floor(num);
+    }
+
+    animatePlanet() {
+      const p = this.elements.planet;
+      p.style.transform = 'scale(.88) rotate(3deg)';
+      setTimeout(() => p.style.transform = '', 100);
+    }
+
+    glowPlanet() {
+      const p = this.elements.planet;
+      p.style.textShadow = '0 0 40px #aaff88,0 0 80px #44ff88';
+      setTimeout(() => p.style.textShadow = '', 200);
+    }
+
+    highlightCounter() {
+      const cc = this.elements.clickCount;
+      cc.style.color = '#8ab4ff';
+      setTimeout(() => cc.style.color = '', 200);
+    }
+
+    setSaveStatus(text, isError = false) {
+      const el = this.elements.saveStatus;
+      el.textContent = text;
+      el.style.color = isError ? '#8f4a5a' : '#3a6a5f';
+      setTimeout(() => {
+        el.textContent = '💾 автосохранение';
+        el.style.color = '#3a6a5f';
+      }, 2000);
+    }
+  }
+
+  // ====== ВИЗУАЛЬНЫЕ ЭФФЕКТЫ ======
+  class VisualEffects {
+    static showFloatingText(x, y, amount) {
+      const el = document.createElement('div');
+      el.className = 'float';
+      el.textContent = `+${Math.floor(amount)}`;
+      el.style.left = (x - 40) + 'px';
+      el.style.top = (y - 30) + 'px';
+      document.body.append(el);
+      setTimeout(() => el.remove(), 1000);
+    }
+  }
+
+  // ====== API КЛИЕНТ ======
+  class ApiClient {
+    static async save(data) {
+      try {
+        const response = await fetch(CONFIG.API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'save', data })
+        });
+        return await response.json();
+      } catch (error) {
+        console.error('Save error:', error);
+        return { success: false, error: error.message };
+      }
+    }
+
+    static async load() {
+      try {
+        const response = await fetch(CONFIG.API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'load' })
+        });
+        return await response.json();
+      } catch (error) {
+        console.error('Load error:', error);
+        return { success: false, error: error.message };
+      }
+    }
+  }
+
+  // ====== ОСНОВНОЙ КЛАСС ИГРЫ ======
+  class Game {
+    constructor() {
+      this.state = new GameState();
+      this.dom = new DOMController();
+      this.saveTimeout = null;
+      this.isSaving = false;
+      
+      this.init();
+    }
+
+    async init() {
+      // Загрузка сохранения
+      await this.loadGame();
+      
+      // Настройка обработчиков
+      this.setupEventListeners();
+      
+      // Запуск автосохранения
+      this.startAutoSave();
+      
+      // Запуск авто-тика
+      this.startAutoTick();
+      
+      // Обновление UI
+      this.dom.update(this.state);
+    }
+
+    setupEventListeners() {
+      // Клик по планете
+      const clickArea = document.getElementById('clickArea');
+      clickArea.addEventListener('click', (e) => this.handleClick(e));
+      clickArea.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        this.handleClick(e);
+      }, { passive: false });
+
+      // Покупка улучшений
+      document.getElementById('buyClick').addEventListener('click', () => this.buyClickUpgrade());
+      document.getElementById('buyClick').addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        this.buyClickUpgrade();
+      }, { passive: false });
+
+      document.getElementById('buyAuto').addEventListener('click', () => this.buyAutoUpgrade());
+      document.getElementById('buyAuto').addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        this.buyAutoUpgrade();
+      }, { passive: false });
+
+      // Сброс
+      document.getElementById('reset').addEventListener('click', () => this.resetGame());
+      document.getElementById('reset').addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        this.resetGame();
+      }, { passive: false });
+
+      // Сохранение при закрытии
+      window.addEventListener('beforeunload', () => this.saveGame());
+    }
+
+    handleClick(e) {
+      this.state.resources += this.state.clickPower;
+      this.state.totalClicks++;
+      
+      this.dom.update(this.state);
+      this.dom.animatePlanet();
+      this.dom.highlightCounter();
+
+      // Показываем всплывающую цифру
+      const rect = document.getElementById('clickArea').getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const x = e.changedTouches ? e.changedTouches[0].clientX : e.clientX || cx;
+      const y = e.changedTouches ? e.changedTouches[0].clientY : e.clientY || cy;
+      VisualEffects.showFloatingText(x, y, this.state.clickPower);
+    }
+
+    buyClickUpgrade() {
+      if (this.state.resources < this.state.clickCost) return;
+      this.state.resources -= this.state.clickCost;
+      this.state.clickPower++;
+      this.state.clickCost = Math.floor(this.state.clickCost * CONFIG.CLICK_COST_MULT);
+      this.dom.update(this.state);
+    }
+
+    buyAutoUpgrade() {
+      if (this.state.resources < this.state.autoCost) return;
+      this.state.resources -= this.state.autoCost;
+      this.state.autoPower++;
+      this.state.autoCost = Math.floor(this.state.autoCost * CONFIG.AUTO_COST_MULT);
+      this.dom.update(this.state);
+    }
+
+    resetGame() {
+      if (confirm('Сбросить всё?')) {
+        this.state.reset();
+        this.dom.update(this.state);
+        this.saveGame();
+      }
+    }
+
+    startAutoTick() {
+      setInterval(() => {
+        if (this.state.autoPower > 0) {
+          this.state.resources += this.state.autoPower;
+          this.dom.update(this.state);
+          this.dom.glowPlanet();
+        }
+      }, 1000);
+    }
+
+    startAutoSave() {
+      setInterval(() => {
+        this.saveGame();
+      }, CONFIG.SAVE_INTERVAL);
+    }
+
+    async saveGame() {
+      if (this.isSaving) return;
+      this.isSaving = true;
+      
+      try {
+        const result = await ApiClient.save(this.state.serialize());
+        if (result.success) {
+          this.dom.setSaveStatus('✅ сохранено');
+        } else {
+          this.dom.setSaveStatus(`❌ ${result.error || 'ошибка'}`, true);
+        }
+      } catch (error) {
+        this.dom.setSaveStatus('❌ ошибка сети', true);
+      } finally {
+        this.isSaving = false;
+      }
+    }
+
+    async loadGame() {
+      try {
+        const result = await ApiClient.load();
+        if (result.success && result.data) {
+          this.state.load(result.data);
+          this.dom.update(this.state);
+          this.dom.setSaveStatus('✅ загружено');
+        } else if (result.error) {
+          console.log('No save found or error:', result.error);
+        }
+      } catch (error) {
+        console.error('Load error:', error);
+      }
+    }
+  }
+
+  // ====== ЗАПУСК ======
+  document.addEventListener('DOMContentLoaded', () => {
+    window.game = new Game();
+  });
+</script>
+
+<?php
+// ====== save.php ======
+// Сохраняем этот файл как save.php в той же папке
+
+// Настройки
+define('SAVE_FILE', 'game_save.json');
+
+// Получаем данные
+$input = json_decode(file_get_contents('php://input'), true);
+$action = $input['action'] ?? '';
+
+// Обработка действий
+if ($action === 'save') {
+    $data = $input['data'] ?? null;
+    if ($data) {
+        $saveData = [
+            'data' => $data,
+            'timestamp' => time()
+        ];
+        if (file_put_contents(SAVE_FILE, json_encode($saveData, JSON_PRETTY_PRINT))) {
+            echo json_encode(['success' => true, 'message' => 'Saved successfully']);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Failed to write file']);
+        }
+    } else {
+        echo json_encode(['success' => false, 'error' => 'No data provided']);
+    }
+} elseif ($action === 'load') {
+    if (file_exists(SAVE_FILE)) {
+        $content = file_get_contents(SAVE_FILE);
+        $saveData = json_decode($content, true);
+        if ($saveData && isset($saveData['data'])) {
+            echo json_encode(['success' => true, 'data' => $saveData['data']]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Invalid save format']);
+        }
+    } else {
+        echo json_encode(['success' => false, 'error' => 'No save found']);
+    }
+} else {
+    echo json_encode(['success' => false, 'error' => 'Invalid action']);
+}
+?>
+</body>
+</html>
