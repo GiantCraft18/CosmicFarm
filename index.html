@@ -4,76 +4,105 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>⭐ Кликер</title>
-  <link rel="stylesheet" href="css/style.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-tap-highlight-color:transparent}
+    body{min-height:100dvh;display:flex;justify-content:center;align-items:center;font-family:system-ui,sans-serif;background:#0a0e1a;padding:12px;touch-action:manipulation;overflow:hidden}
+    .game{max-width:420px;width:100%;background:linear-gradient(145deg,#141b33,#0b1022);border-radius:40px;padding:24px 20px 28px;box-shadow:0 20px 60px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.06)}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px}
+    .header h1{font-size:clamp(1.2rem,4vw,1.6rem);font-weight:600;background:linear-gradient(135deg,#8ab4ff,#4a7fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .stats{display:flex;gap:8px;background:rgba(255,255,255,.04);border-radius:60px;padding:6px 14px;flex-wrap:wrap}
+    .stats span{color:#8a9fc7;font-size:clamp(.65rem,1.8vw,.8rem);display:flex;align-items:center;gap:4px}
+    .stats strong{color:#fff;font-weight:600}
+    .balance{text-align:center;margin:-6px 0 12px;font-size:clamp(1.4rem,4.5vw,2rem);font-weight:700;color:#fff;text-shadow:0 0 20px rgba(59,110,255,.3)}
+    .balance small{font-size:clamp(.7rem,1.8vw,.85rem);color:#6d8fc9;font-weight:400}
+    .clicker{background:radial-gradient(circle at 30% 25%,#1f3a6b,#0b152b);border-radius:50%;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:8px auto 16px;cursor:pointer;touch-action:none;transition:.08s;box-shadow:inset 0 -6px 0 #0a1628,0 12px 40px rgba(0,20,80,.5);border:1px solid rgba(100,160,255,.15);width:min(65vw,280px);position:relative}
+    .clicker:active{transform:scale(.95);box-shadow:inset 0 -3px 0 #0a1628,0 8px 30px rgba(0,20,80,.4)}
+    .clicker .planet{font-size:clamp(4rem,18vw,6rem);line-height:1;filter:drop-shadow(0 0 30px #3f7bff);transition:.08s;pointer-events:none}
+    .clicker:active .planet{transform:scale(.9) rotate(3deg)}
+    .clicker .hint{color:#6d8fc9;font-size:clamp(.65rem,1.6vw,.8rem);margin-top:4px;background:rgba(0,0,0,.3);padding:3px 14px;border-radius:40px}
+    .click-counter{position:absolute;bottom:12px;right:16px;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);padding:2px 12px;border-radius:20px;font-size:clamp(.55rem,1.4vw,.7rem);color:#6d8fc9;border:1px solid rgba(255,255,255,.05)}
+    .click-counter strong{color:#fff;font-weight:500}
+    .upgrades{display:flex;flex-direction:column;gap:10px;margin:10px 0 8px}
+    .upgrade{background:rgba(255,255,255,.03);border-radius:60px;padding:8px 16px 8px 20px;display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(255,255,255,.06);gap:8px;flex-wrap:wrap}
+    .upgrade .info{display:flex;align-items:center;gap:12px;flex:1;min-width:120px}
+    .upgrade .icon{font-size:clamp(1.4rem,3.5vw,1.8rem)}
+    .upgrade .desc{color:#a8bde0}
+    .upgrade .desc strong{display:block;color:#fff;font-size:clamp(.9rem,2.4vw,1.05rem);font-weight:500}
+    .upgrade .desc small{color:#6a83af;font-size:clamp(.65rem,1.6vw,.8rem)}
+    .upgrade .cost{background:rgba(0,0,0,.3);padding:4px 14px;border-radius:40px;color:#fcd34d;font-weight:600;font-size:clamp(.85rem,2.2vw,1rem);white-space:nowrap}
+    .upgrade .cost span{color:#fbbf24;margin-right:2px}
+    .btn{background:linear-gradient(145deg,#3b6eff,#1a4ac8);border:none;color:#fff;font-weight:600;font-size:clamp(.9rem,2.2vw,1.05rem);padding:6px 18px;border-radius:40px;min-width:70px;cursor:pointer;box-shadow:0 4px 0 #0f2760;transition:.07s;border:1px solid rgba(255,255,255,.1);touch-action:manipulation}
+    .btn:active{transform:translateY(4px);box-shadow:0 1px 0 #0f2760}
+    .btn:disabled{opacity:.35;transform:translateY(2px);box-shadow:0 2px 0 #0f2760;pointer-events:none}
+    .footer{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:10px}
+    .reset{background:transparent;border:1px solid rgba(255,255,255,.08);color:#6a83af;padding:6px 20px;border-radius:40px;font-size:clamp(.7rem,1.6vw,.85rem);cursor:pointer;transition:.15s}
+    .reset:active{transform:scale(.95)}
+    .total-clicks{color:#4a6a8f;font-size:clamp(.6rem,1.4vw,.7rem)}
+    .save-status{color:#3a6a5f;font-size:clamp(.5rem,1.2vw,.6rem);text-align:right;margin-top:4px;opacity:.7}
+    .float{position:fixed;pointer-events:none;font-weight:700;font-size:clamp(1.8rem,6vw,2.6rem);color:#b7e1ff;text-shadow:0 0 20px #3d8eff,0 0 40px #0044ff;z-index:999;animation:floatUp 1s ease-out forwards}
+    @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-140px) scale(1.3)}}
+    @keyframes particleFly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0)}}
+    @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+    @media(max-width:480px){.game{padding:16px 14px 20px}.upgrade{padding:6px 12px}.btn{min-width:60px;padding:6px 12px;font-size:.85rem}.click-counter{bottom:8px;right:10px;padding:2px 10px}}
+    @media(prefers-color-scheme:light){body{background:#e8ecf5}.game{background:linear-gradient(145deg,#f0f4ff,#dce3f5);box-shadow:0 20px 60px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.5)}.header h1{background:linear-gradient(135deg,#2d6eff,#1a4ac8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}.stats{background:rgba(0,0,0,.05)}.stats span{color:#5a6f8f}.stats strong{color:#1a2a4a}.balance{color:#1a2a4a}.balance small{color:#5a6f8f}.clicker{background:radial-gradient(circle at 30% 25%,#8ab4ff,#4a7fff);box-shadow:inset 0 -6px 0 #2d5a9a,0 12px 40px rgba(0,20,80,.2)}.upgrade{background:rgba(0,0,0,.03);border-color:rgba(0,0,0,.08)}.upgrade .desc{color:#4a5f7f}.upgrade .desc strong{color:#1a2a4a}.upgrade .desc small{color:#6a83af}.total-clicks{color:#6a83af}.save-status{color:#3a7a5f}}
+  </style>
 </head>
 <body>
-  <div class="game">
-    <!-- Хедер -->
-    <div class="header">
-      <h1>⭐ Кликер</h1>
-      <div class="stats">
-        <span>⚡<strong id="clickPower">1</strong></span>
-        <span>🤖<strong id="autoPower">0</strong></span>
-      </div>
+<div class="game">
+  <div class="header">
+    <h1>⭐ Кликер</h1>
+    <div class="stats">
+      <span>⚡<strong id="p"></strong></span>
+      <span>🤖<strong id="a"></strong></span>
     </div>
-
-    <!-- Баланс -->
-    <div class="balance">
-      <span id="resources">0</span> <small>🪐</small>
-    </div>
-
-    <!-- Планета -->
-    <div class="clicker" id="clickArea" role="button">
-      <div class="planet" id="planet">🪐</div>
-      <div class="hint">нажми</div>
-      <div class="click-counter">👆 <strong id="clickCount">0</strong></div>
-    </div>
-
-    <!-- Улучшения -->
-    <div class="upgrades">
-      <div class="upgrade" id="upgradeClick">
-        <div class="info">
-          <div class="icon">⚡</div>
-          <div class="desc">
-            <strong>Сила клика</strong>
-            <small>+1 за клик</small>
-          </div>
-        </div>
-        <div class="cost"><span>🪐</span><span id="clickCost">10</span></div>
-        <button class="btn" id="buyClick">Купить</button>
-      </div>
-      
-      <div class="upgrade" id="upgradeAuto">
-        <div class="info">
-          <div class="icon">🤖</div>
-          <div class="desc">
-            <strong>Авто-дрон</strong>
-            <small>+1/сек</small>
-          </div>
-        </div>
-        <div class="cost"><span>🪐</span><span id="autoCost">20</span></div>
-        <button class="btn" id="buyAuto">Купить</button>
-      </div>
-    </div>
-
-    <!-- Футер -->
-    <div class="footer">
-      <span class="total-clicks">Всего кликов: <strong id="totalClicks">0</strong></span>
-      <button class="reset" id="reset">⟳ сброс</button>
-    </div>
-    <div class="save-status" id="saveStatus">💾 автосохранение</div>
   </div>
-
-  <!-- Подключаем JS -->
-  <script src="js/config.js"></script>
-  <script src="js/utils.js"></script>
-  <script src="js/state.js"></script>
-  <script src="js/dom.js"></script>
-  <script src="js/effects.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/achievements.js"></script>
-  <script src="js/combo.js"></script>
-  <script src="js/prestige.js"></script>
-  <script src="js/app.js"></script>
+  <div class="balance"><span id="r">0</span> <small>🪐</small></div>
+  <div class="clicker" id="c">
+    <div class="planet" id="pl">🪐</div>
+    <div class="hint">нажми</div>
+    <div class="click-counter">👆 <strong id="cc">0</strong></div>
+  </div>
+  <div class="upgrades">
+    <div class="upgrade">
+      <div class="info"><div class="icon">⚡</div><div class="desc"><strong>Сила клика</strong><small>+1</small></div></div>
+      <div class="cost"><span>🪐</span><span id="ccost">10</span></div>
+      <button class="btn" id="bc">Купить</button>
+    </div>
+    <div class="upgrade">
+      <div class="info"><div class="icon">🤖</div><div class="desc"><strong>Авто-дрон</strong><small>+1/сек</small></div></div>
+      <div class="cost"><span>🪐</span><span id="acost">20</span></div>
+      <button class="btn" id="ba">Купить</button>
+    </div>
+  </div>
+  <div class="footer">
+    <span class="total-clicks">Всего: <strong id="tc">0</strong></span>
+    <button class="reset" id="res">⟳ сброс</button>
+  </div>
+  <div class="save-status" id="ss">💾 автосохранение</div>
+</div>
+<script>
+// ====== МИНИМИЗИРОВАННАЯ ВЕРСИЯ ======
+const C={SI:3e3,CM:1.8,AM:2,MR:1e12};
+let s={r:0,p:1,a:0,pc:10,ac:20,t:0},S=false,T=null;
+const $=i=>document.getElementById(i),f=n=>n>=1e9?(n/1e9).toFixed(1)+'B':n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':Math.floor(n);
+const U=()=>{$('r').textContent=f(s.r);$('p').textContent=s.p;$('a').textContent=s.a;$('pc').textContent=f(s.pc);$('ac').textContent=f(s.ac);$('cc').textContent=s.t;$('tc').textContent=s.t;$('bc').disabled=s.r<s.pc;$('ba').disabled=s.r<s.ac};
+const F=(x,y,v)=>{let e=document.createElement('div');e.className='float';e.textContent='+'+Math.floor(v);e.style.left=(x-40)+'px';e.style.top=(y-30)+'px';document.body.append(e);setTimeout(()=>e.remove(),1e3)};
+const P=(x,y)=>{for(let i=0;i<6;i++){let e=document.createElement('div'),a=Math.random()*6.28,d=40+Math.random()*60;e.style.cssText=`position:fixed;pointer-events:none;width:${3+Math.random()*4}px;height:${3+Math.random()*4}px;background:${['#3b6eff','#8ab4ff','#fcd34d','#aaff88','#ff6b6b','#ff9ff3'][i%6]};border-radius:50%;left:${x}px;top:${y}px;z-index:998;animation:particleFly ${.6+Math.random()*.4}s ease-out forwards;--tx:${Math.cos(a)*d}px;--ty:${Math.sin(a)*d-20}px`;document.body.append(e);setTimeout(()=>e.remove(),1e3)}};
+const h=e=>{let p=s.p;if(s.r=Math.min(s.r+p,C.MR),s.t++,U(),$('pl').style.transform='scale(.88) rotate(3deg)',setTimeout(()=>$('pl').style.transform='',100),$('cc').style.color='#8ab4ff',setTimeout(()=>$('cc').style.color='',200)){let r=$('c').getBoundingClientRect(),x=e.changedTouches?e.changedTouches[0].clientX:e.clientX||r.left+r.width/2,y=e.changedTouches?e.changedTouches[0].clientY:e.clientY||r.top+r.height/2;F(x,y,p),P(x,y)}};
+const bC=()=>{if(s.r>=s.pc){s.r-=s.pc;s.p++;s.pc=Math.floor(s.pc*C.CM);U();let p=$('pl');p.style.textShadow='0 0 40px #3b6eff,0 0 80px #3b6eff';setTimeout(()=>p.style.textShadow='',200)}};
+const bA=()=>{if(s.r>=s.ac){s.r-=s.ac;s.a++;s.ac=Math.floor(s.ac*C.AM);U();let p=$('pl');p.style.textShadow='0 0 40px #aaff88,0 0 80px #44ff88';setTimeout(()=>p.style.textShadow='',200)}};
+const R=()=>{if(confirm('Сбросить всё?')){s={r:0,p:1,a:0,pc:10,ac:20,t:0};U();let e=$('ss');e.textContent='🔄 сброшено';setTimeout(()=>{e.textContent='💾 автосохранение'},2e3)}};
+const save=async()=>{if(S)return;S=true;try{let r=await fetch('save.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save',data:s})}),j=await r.json();let e=$('ss');e.textContent=j.success?'✅ сохранено':'❌ ошибка';e.style.color=j.success?'#3a6a5f':'#8f4a5a';setTimeout(()=>{e.textContent='💾 автосохранение';e.style.color='#3a6a5f'},2e3)}catch(e){$('ss').textContent='❌ сеть'}S=false};
+const load=async()=>{try{let r=await fetch('save.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'load'})}),j=await r.json();if(j.success&&j.data){Object.assign(s,j.data);U();$('ss').textContent='✅ загружено';setTimeout(()=>{$('ss').textContent='💾 автосохранение'},2e3)}}catch(e){}};
+$('c').addEventListener('click',h);$('c').addEventListener('touchstart',e=>{e.preventDefault();h(e)},{passive:!1});
+$('bc').addEventListener('click',bC);$('bc').addEventListener('touchstart',e=>{e.preventDefault();bC()},{passive:!1});
+$('ba').addEventListener('click',bA);$('ba').addEventListener('touchstart',e=>{e.preventDefault();bA()},{passive:!1});
+$('res').addEventListener('click',R);$('res').addEventListener('touchstart',e=>{e.preventDefault();R()},{passive:!1});
+setInterval(()=>{if(s.a>0){s.r=Math.min(s.r+s.a,C.MR);U();let p=$('pl');p.style.textShadow='0 0 40px #aaff88,0 0 80px #44ff88';setTimeout(()=>p.style.textShadow='',200)}},1e3);
+setInterval(save,C.SI);
+load();
+U();
+document.addEventListener('contextmenu',e=>e.preventDefault());
+</script>
 </body>
-  </html>
+</html>
